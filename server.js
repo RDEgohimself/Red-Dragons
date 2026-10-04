@@ -70,7 +70,7 @@ async function fetchRoles() {
   }
 
   return roles
-    .filter((r) => r.name !== '@everyone' && !r.managed)
+    .filter((r) => r.name !== '@everyone' && !r.managed && r.hoist)
     .sort((a, b) => b.position - a.position)
     .map((r) => ({
       id: r.id,
