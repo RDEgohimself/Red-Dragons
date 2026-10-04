@@ -1,4 +1,7 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
+const crypto = require('crypto');
+const fs = require('fs');
 const path = require('path');
 
 const app = express();
@@ -8,9 +11,76 @@ const INVITE_CODE = process.env.INVITE_CODE || 'reddragons';
 const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
 const YT_API_KEY = process.env.YOUTUBE_API_KEY;
+const ADMIN_USER = process.env.ADMIN_USER;
+const ADMIN_PASS = process.env.ADMIN_PASS;
+const SESSION_SECRET = process.env.SESSION_SECRET || 'dev-secret-change-me';
 const WAR_CHANNEL_ID = '1504538662367662340';
 const YT_HANDLE = 'RedDragonsOfficial1';
 
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
+const TEAMS_FILE = path.join(DATA_DIR, 'teams.json');
+
+const DEFAULT_TEAMS = [
+  {
+    id: 'z', letter: 'Z', name: 'Primordial of Origin',
+    region: 'Asia', accent: '#ffc857', maxMembers: 10,
+    members: [
+      {
+        discordId: '605671229101178887',
+        name: 'holq', username: '0dqt', nickname: 'holq',
+        avatar: '', role: 'Captain',
+        joinedAt: '2026-02-16T00:00:00.000Z',
+        description: '',
+      },
+    ],
+  },
+  { id: 'y', letter: 'Y', name: 'Stormbreakers', region: 'Asia', accent: '#ff8a3d', maxMembers: 10, members: [] },
+  { id: 'x', letter: 'X', name: 'Reapers',       region: 'Asia', accent: '#a259ff', maxMembers: 10, members: [] },
+  { id: 'a', letter: 'A', name: 'Ancients',      region: 'Asia', accent: '#ff3b3b', maxMembers: 10, members: [] },
+];
+
+/* ---------- Middleware ---------- */
+app.use(express.json({ limit: '512kb' }));
+app.use(cookieParser(SESSION_SECRET));
+
+/* ---------- Teams storage ---------- */
+function loadTeamsFromDisk() {
+  try {
+    const raw = fs.readFileSync(TEAMS_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : DEFAULT_TEAMS;
+  } catch {
+    try {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+      fs.writeFileSync(TEAMS_FILE, JSON.stringify(DEFAULT_TEAMS, null, 2));
+    } catch (e) {
+      console.warn('Could not seed teams file:', e.message);
+    }
+    return DEFAULT_TEAMS;
+  }
+}
+
+function saveTeamsToDisk(teams) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.writeFileSync(TEAMS_FILE, JSON.stringify(teams, null, 2));
+}
+
+let teamsCache = loadTeamsFromDisk();
+
+/* ---------- Auth ---------- */
+function timingSafeEqual(a, b) {
+  const ab = Buffer.from(String(a ?? ''));
+  const bb = Buffer.from(String(b ?? ''));
+  if (ab.length !== bb.length) return false;
+  return crypto.timingSafeEqual(ab, bb);
+}
+
+function requireAdmin(req, res, next) {
+  if (req.signedCookies?.rd_admin === 'admin') return next();
+  res.status(401).json({ error: 'Unauthorized' });
+}
+
+/* ---------- Cache ---------- */
 const CACHE = {
   invite:    { data: null, ts: 0, ttl: 30_000 },
   roles:     { data: null, ts: 0, ttl: 60_000 },
@@ -29,13 +99,12 @@ async function cached(key, fn) {
     c.ts = now;
     return fresh;
   } catch (e) {
-    if (c.data) return c.data; // serve stale on upstream failure
+    if (c.data) return c.data;
     throw e;
   }
 }
 
 /* ---------- Discord ---------- */
-
 async function fetchInvite() {
   const url = `https://discord.com/api/v10/invites/${INVITE_CODE}?with_counts=true&with_expiration=true`;
   const res = await fetch(url, { headers: { 'User-Agent': 'RedDragonsSite/1.0' } });
@@ -58,23 +127,17 @@ async function discordBot(pathname) {
   return res.json();
 }
 
-// Paginate through every guild member (Discord caps each page at 1000)
 async function fetchAllMembers() {
   if (!GUILD_ID) throw new Error('GUILD_ID not set');
   const all = [];
   let after = '0';
-
-  // Hard cap on pages in case Discord misbehaves — 50 pages * 1000 = 50k members.
   for (let page = 0; page < 50; page++) {
-    const batch = await discordBot(
-      `/guilds/${GUILD_ID}/members?limit=1000&after=${after}`
-    );
+    const batch = await discordBot(`/guilds/${GUILD_ID}/members?limit=1000&after=${after}`);
     if (!Array.isArray(batch) || batch.length === 0) break;
     all.push(...batch);
     if (batch.length < 1000) break;
     after = batch[batch.length - 1].user.id;
   }
-
   return all;
 }
 
@@ -84,12 +147,10 @@ async function fetchRoles() {
     discordBot(`/guilds/${GUILD_ID}/roles`),
     fetchAllMembers(),
   ]);
-
   const counts = {};
   for (const m of members) {
     for (const rid of m.roles || []) counts[rid] = (counts[rid] || 0) + 1;
   }
-
   return roles
     .filter((r) => r.name !== '@everyone' && !r.managed && r.hoist)
     .sort((a, b) => b.position - a.position)
@@ -122,8 +183,41 @@ async function fetchRoster() {
     }));
 }
 
-/* ---------- YouTube ---------- */
+/* Look up a single guild member for the admin "add from Discord" flow */
+async function fetchDiscordUser(userId) {
+  if (!GUILD_ID) throw new Error('GUILD_ID not set');
+  const m = await discordBot(`/guilds/${GUILD_ID}/members/${userId}`);
+  const roles = await discordBot(`/guilds/${GUILD_ID}/roles`);
+  const roleMap = new Map(roles.map((r) => [r.id, r]));
+  const userRoleObjects = (m.roles || [])
+    .map((id) => roleMap.get(id))
+    .filter((r) => r && r.name !== '@everyone')
+    .sort((a, b) => b.position - a.position);
+  const top = userRoleObjects[0];
 
+  const avatar = m.user?.avatar
+    ? `https://cdn.discordapp.com/avatars/${m.user.id}/${m.user.avatar}.png?size=256`
+    : (m.user?.id
+      ? `https://cdn.discordapp.com/embed/avatars/${Number(BigInt(m.user.id) >> 22n) % 6}.png`
+      : null);
+
+  return {
+    id: m.user.id,
+    username: m.user.username,
+    globalName: m.user.global_name || null,
+    nickname: m.nick || null,
+    displayName: m.nick || m.user.global_name || m.user.username,
+    avatar,
+    joinedAt: m.joined_at || null,
+    topRole: top ? {
+      id: top.id,
+      name: top.name,
+      color: top.color ? '#' + top.color.toString(16).padStart(6, '0') : null,
+    } : null,
+  };
+}
+
+/* ---------- YouTube ---------- */
 async function fetchChannelId() {
   if (YT_API_KEY) {
     const url = `https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=@${YT_HANDLE}&key=${YT_API_KEY}`;
@@ -134,8 +228,6 @@ async function fetchChannelId() {
       if (id) return id;
     }
   }
-
-  // Fallback: scrape the channel page
   const res = await fetch(`https://www.youtube.com/@${YT_HANDLE}`, {
     headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RedDragonsSite/1.0)' },
   });
@@ -148,53 +240,36 @@ async function fetchChannelId() {
 
 function decodeXml(s) {
   return String(s)
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&apos;/g, "'");
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&apos;/g, "'");
 }
 
 async function fetchUploadsViaApi(channelId) {
-  // Uploads playlist ID = channel ID with leading "UC" swapped for "UU"
   const uploadsPlaylistId = 'UU' + channelId.slice(2);
   const all = [];
   let pageToken = '';
-
   do {
     const params = new URLSearchParams({
-      part: 'snippet',
-      maxResults: '50',
-      playlistId: uploadsPlaylistId,
-      key: YT_API_KEY,
+      part: 'snippet', maxResults: '50',
+      playlistId: uploadsPlaylistId, key: YT_API_KEY,
     });
     if (pageToken) params.set('pageToken', pageToken);
-
     const res = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?${params}`);
     if (!res.ok) throw new Error(`YouTube API ${res.status}`);
     const j = await res.json();
-
     for (const item of j.items || []) {
       const s = item.snippet;
       const vid = s?.resourceId?.videoId;
       if (!vid) continue;
       if (s.title === 'Private video' || s.title === 'Deleted video') continue;
       all.push({
-        id: vid,
-        title: s.title,
-        published: s.publishedAt,
+        id: vid, title: s.title, published: s.publishedAt,
         url: `https://www.youtube.com/watch?v=${vid}`,
-        thumbnail:
-          s.thumbnails?.high?.url ||
-          s.thumbnails?.medium?.url ||
-          `https://i.ytimg.com/vi/${vid}/hqdefault.jpg`,
+        thumbnail: s.thumbnails?.high?.url || s.thumbnails?.medium?.url || `https://i.ytimg.com/vi/${vid}/hqdefault.jpg`,
       });
     }
-
     pageToken = j.nextPageToken || '';
   } while (pageToken);
-
   return all;
 }
 
@@ -204,7 +279,6 @@ async function fetchUploadsViaRss(channelId) {
   });
   if (!res.ok) throw new Error(`YouTube RSS ${res.status}`);
   const xml = await res.text();
-
   const entries = [...xml.matchAll(/<entry>([\s\S]*?)<\/entry>/g)].map((m) => m[1]);
   return entries
     .map((e) => {
@@ -212,9 +286,7 @@ async function fetchUploadsViaRss(channelId) {
       const title = e.match(/<title>([^<]+)<\/title>/)?.[1] ?? 'Untitled';
       const published = e.match(/<published>([^<]+)<\/published>/)?.[1] ?? null;
       return {
-        id,
-        title: decodeXml(title),
-        published,
+        id, title: decodeXml(title), published,
         url: id ? `https://www.youtube.com/watch?v=${id}` : null,
         thumbnail: id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : null,
       };
@@ -225,17 +297,40 @@ async function fetchUploadsViaRss(channelId) {
 async function fetchUploads() {
   const channelId = await cached('channelId', fetchChannelId);
   if (YT_API_KEY) {
-    try {
-      return await fetchUploadsViaApi(channelId);
-    } catch (e) {
-      console.warn('YouTube API failed, falling back to RSS:', e.message);
-    }
+    try { return await fetchUploadsViaApi(channelId); }
+    catch (e) { console.warn('YouTube API failed, falling back to RSS:', e.message); }
   }
   return fetchUploadsViaRss(channelId);
 }
 
-/* ---------- Routes ---------- */
+/* ---------- Auth routes ---------- */
+app.post('/api/login', (req, res) => {
+  if (!ADMIN_USER || !ADMIN_PASS) {
+    return res.status(500).json({ error: 'Admin credentials not configured' });
+  }
+  const { user, pass } = req.body || {};
+  const ok = timingSafeEqual(user, ADMIN_USER) && timingSafeEqual(pass, ADMIN_PASS);
+  if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
+  res.cookie('rd_admin', 'admin', {
+    signed: true,
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 7 * 24 * 3600 * 1000,
+  });
+  res.json({ ok: true });
+});
 
+app.post('/api/logout', (_req, res) => {
+  res.clearCookie('rd_admin');
+  res.json({ ok: true });
+});
+
+app.get('/api/session', (req, res) => {
+  res.json({ authenticated: req.signedCookies?.rd_admin === 'admin' });
+});
+
+/* ---------- Public data routes ---------- */
 app.get('/api/members', async (_req, res) => {
   try {
     const data = await cached('invite', fetchInvite);
@@ -270,7 +365,39 @@ app.get('/api/config', async (_req, res) => {
   }
 });
 
+app.get('/api/teams', (_req, res) => res.json(teamsCache));
+
+/* ---------- Admin routes ---------- */
+app.put('/api/teams', requireAdmin, (req, res) => {
+  if (!Array.isArray(req.body)) return res.status(400).json({ error: 'Expected an array of teams' });
+  try {
+    teamsCache = req.body;
+    saveTeamsToDisk(teamsCache);
+    res.json({ ok: true, teams: teamsCache });
+  } catch (e) {
+    res.status(500).json({ error: 'Save failed', detail: e.message });
+  }
+});
+
+app.get('/api/discord/user/:id', requireAdmin, async (req, res) => {
+  const id = String(req.params.id || '').trim();
+  if (!/^\d{15,25}$/.test(id)) {
+    return res.status(400).json({ error: 'Invalid Discord user ID' });
+  }
+  try {
+    const data = await fetchDiscordUser(id);
+    res.json(data);
+  } catch (e) {
+    res.status(502).json({ error: 'Discord lookup failed', detail: e.message });
+  }
+});
+
+/* ---------- Health + static ---------- */
 app.get('/api/health', (_req, res) => res.json({ ok: true, uptime: process.uptime() }));
+
+app.get('/admin', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
 
 app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'], maxAge: '1h' }));
 app.get('*', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
