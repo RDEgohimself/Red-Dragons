@@ -11,6 +11,7 @@
   "engines": { "node": ">=18" },
   "dependencies": {
     "express": "^4.19.2",
-    "cookie-parser": "^1.4.6"
+    "cookie-parser": "^1.4.6",
+    "@supabase/supabase-js": "^2.45.0"
   }
 }
