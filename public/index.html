@@ -215,79 +215,162 @@
     </div>
   </section>
 
-  <!-- ROLES -->
+  <!-- ROLES (Discord) -->
   <section id="roles" class="section roles">
     <div class="section-head">
       <span class="section-num">03</span>
       <h2>Roles</h2>
-      <span class="section-tag">pick your path</span>
+      <span class="section-tag">discord hierarchy</span>
     </div>
     <p class="section-sub">
-      Every dragon flies a role. Find the one that fits how you play — and climb
-      from Recruit to Captain if you're built for it.
+      Every dragon wears a Discord role. Rank determines access, authority, and
+      how loud your ping is when you call for backup.
     </p>
 
-    <div class="roles-grid">
-      <article class="role-card">
-        <span class="role-glyph">◈</span>
-        <h3>IGL</h3>
-        <p>In-game leader. Calls the fight. Reads the map. Blamed for losses, credited with nothing.</p>
-        <span class="role-tag">command</span>
+    <!-- Role hierarchy -->
+    <div class="role-hierarchy">
+      <article class="role-row role-founder">
+        <span class="role-swatch"></span>
+        <div class="role-info">
+          <h3>Founder</h3>
+          <p>Holds the banner. Final say on wars, roster, and treasury.</p>
+        </div>
+        <div class="role-members">
+          <span class="rm-label">Held by</span>
+          <div class="rm-chips">
+            <span class="chip">Vex</span>
+          </div>
+        </div>
+        <span class="role-count">1</span>
       </article>
-      <article class="role-card">
-        <span class="role-glyph">⚔</span>
-        <h3>Fragger</h3>
-        <p>The front line. Eats damage, deals damage. Lives and dies by the aim.</p>
-        <span class="role-tag">combat</span>
+
+      <article class="role-row role-council">
+        <span class="role-swatch"></span>
+        <div class="role-info">
+          <h3>Council</h3>
+          <p>Team captains and senior leadership. Vote on big calls.</p>
+        </div>
+        <div class="role-members">
+          <span class="rm-label">Held by</span>
+          <div class="rm-chips">
+            <span class="chip">Kael</span>
+            <span class="chip">Sable</span>
+            <span class="chip">Rook</span>
+          </div>
+        </div>
+        <span class="role-count">3</span>
       </article>
-      <article class="role-card">
-        <span class="role-glyph">◎</span>
-        <h3>Sniper</h3>
-        <p>Holds long angles. One shot, one pick, one silent rotation before they find you.</p>
-        <span class="role-tag">precision</span>
+
+      <article class="role-row role-officer">
+        <span class="role-swatch"></span>
+        <div class="role-info">
+          <h3>Officer</h3>
+          <p>Runs events, vets recruits, enforces war rules.</p>
+        </div>
+        <div class="role-members">
+          <span class="rm-label">Held by</span>
+          <div class="rm-chips">
+            <span class="chip">Ash</span>
+            <span class="chip">Nyx</span>
+            <span class="chip">Dray</span>
+          </div>
+        </div>
+        <span class="role-count">3</span>
       </article>
-      <article class="role-card">
-        <span class="role-glyph">✚</span>
-        <h3>Support</h3>
-        <p>Utility, heals, revives, setups. The reason the fragger survived that push.</p>
-        <span class="role-tag">utility</span>
+
+      <article class="role-row role-veteran">
+        <span class="role-swatch"></span>
+        <div class="role-info">
+          <h3>Veteran</h3>
+          <p>Trusted members. Priority queue for war slots and giveaways.</p>
+        </div>
+        <div class="role-members">
+          <span class="rm-label">Held by</span>
+          <div class="rm-chips">
+            <span class="chip">Pyre</span>
+            <span class="chip">Zeph</span>
+            <span class="chip">+4</span>
+          </div>
+        </div>
+        <span class="role-count">6</span>
       </article>
-      <article class="role-card">
-        <span class="role-glyph">⇄</span>
-        <h3>Flex</h3>
-        <p>Whatever the fight needs. Fills any gap. Most underrated role in the crew.</p>
-        <span class="role-tag">adaptive</span>
+
+      <article class="role-row role-member">
+        <span class="role-swatch"></span>
+        <div class="role-info">
+          <h3>Member</h3>
+          <p>Full access. Voice channels, war eligibility, clip submissions.</p>
+        </div>
+        <div class="role-members">
+          <span class="rm-label">Held by</span>
+          <div class="rm-chips">
+            <span class="chip">everyone active</span>
+          </div>
+        </div>
+        <span class="role-count">large</span>
       </article>
-      <article class="role-card">
-        <span class="role-glyph">◆</span>
-        <h3>Grinder</h3>
-        <p>Fruit farmer, sea runner, resource machine. Feeds the war chest that keeps wars paid.</p>
-        <span class="role-tag">economy</span>
+
+      <article class="role-row role-recruit">
+        <span class="role-swatch"></span>
+        <div class="role-info">
+          <h3>Recruit</h3>
+          <p>On trial. 14 days to prove you belong. No war slots yet.</p>
+        </div>
+        <div class="role-members">
+          <span class="rm-label">Held by</span>
+          <div class="rm-chips">
+            <span class="chip">new joins</span>
+          </div>
+        </div>
+        <span class="role-count">rolling</span>
       </article>
-      <article class="role-card">
-        <span class="role-glyph">◐</span>
-        <h3>Scout</h3>
-        <p>Eyes everywhere. Tracks enemy crews, watches spawns, calls incoming before anyone else.</p>
-        <span class="role-tag">intel</span>
-      </article>
-      <article class="role-card">
-        <span class="role-glyph">✦</span>
-        <h3>Recruiter</h3>
-        <p>Finds the next dragon. Vets applicants, runs trials, keeps the crew growing sharp.</p>
-        <span class="role-tag">growth</span>
+
+      <article class="role-row role-guest">
+        <span class="role-swatch"></span>
+        <div class="role-info">
+          <h3>Guest</h3>
+          <p>Visiting crews, allies, war challengers. Read-only outside #general.</p>
+        </div>
+        <div class="role-members">
+          <span class="rm-label">Held by</span>
+          <div class="rm-chips">
+            <span class="chip">allies</span>
+          </div>
+        </div>
+        <span class="role-count">—</span>
       </article>
     </div>
 
-    <div class="roles-ranks">
-      <h3 class="ranks-title">Rank Ladder</h3>
-      <ol class="ranks">
-        <li><span>1</span><strong>Recruit</strong><em>on trial</em></li>
-        <li><span>2</span><strong>Member</strong><em>full access</em></li>
-        <li><span>3</span><strong>Veteran</strong><em>trusted</em></li>
-        <li><span>4</span><strong>Officer</strong><em>leads events</em></li>
-        <li><span>5</span><strong>Captain</strong><em>runs a team</em></li>
-        <li><span>6</span><strong>Founder</strong><em>holds the banner</em></li>
-      </ol>
+    <!-- Member roster -->
+    <div class="roster-block">
+      <div class="roster-head">
+        <h3>Who Has What</h3>
+        <div class="roster-filters" id="rosterFilters">
+          <button class="filter-chip active" data-filter="all">All</button>
+          <button class="filter-chip" data-filter="Z">Team Z</button>
+          <button class="filter-chip" data-filter="Y">Team Y</button>
+          <button class="filter-chip" data-filter="X">Team X</button>
+          <button class="filter-chip" data-filter="A">Team A</button>
+          <button class="filter-chip" data-filter="none">No Team</button>
+        </div>
+      </div>
+
+      <div class="roster-table-wrap">
+        <table class="roster-table">
+          <thead>
+            <tr>
+              <th>Handle</th>
+              <th>Team</th>
+              <th>Discord Role</th>
+              <th>In-Game Role</th>
+            </tr>
+          </thead>
+          <tbody id="rosterBody">
+            <!-- populated by main.js -->
+          </tbody>
+        </table>
+        <p class="roster-empty" id="rosterEmpty" hidden>No members match that filter.</p>
+      </div>
     </div>
   </section>
 
@@ -313,14 +396,38 @@
         </a>
       </div>
       <div class="wars-card">
-        <h3>War Rules</h3>
-        <ul>
-          <li>No third-party scripts. Clean fights only.</li>
-          <li>Roster locked 30 minutes before start.</li>
-          <li>Best of 3, or agreed-upon format.</li>
-          <li>Team captains confirm the lineup in voice.</li>
-          <li>Winner takes bragging rights. Loser takes notes.</li>
-        </ul>
+        <div class="wc-section">
+          <h3>Match Rules</h3>
+          <ul>
+            <li>No third-party scripts. Clean fights only.</li>
+            <li>Roster locked 30 minutes before start.</li>
+            <li>Best of 3, or agreed-upon format.</li>
+            <li>Team captains confirm the lineup in voice.</li>
+            <li>Winner takes bragging rights. Loser takes notes.</li>
+          </ul>
+        </div>
+
+        <div class="wc-section">
+          <h3>Banned</h3>
+          <ul class="wc-banned">
+            <li>No control</li>
+            <li>No transformation</li>
+            <li>No portal V and C</li>
+            <li>No run</li>
+            <li>No scripts</li>
+            <li>No externals (matcha, matrix, etc.)</li>
+            <li>No pain</li>
+            <li>No dragon heart</li>
+            <li>No dragon storm</li>
+            <li>No V4</li>
+            <li>No heal on NPC</li>
+          </ul>
+        </div>
+
+        <p class="wc-note">
+          These are not the final war rules. War fighters may update or add
+          rules live in the war GC before a match.
+        </p>
       </div>
     </div>
   </section>
