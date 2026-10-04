@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Red Dragons — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body class="admin-body">
+  <header class="admin-header">
+    <a href="/" class="admin-brand">
+      <span class="brand-mark">RD</span>
+      <span>Admin Panel</span>
+    </a>
+    <div class="admin-header-actions" id="headerActions"></div>
+  </header>
+
+  <main class="admin-main">
+    <section id="loginPanel" class="admin-panel admin-login" hidden>
+      <h1>Sign in</h1>
+      <p class="admin-hint">Admin credentials are set via environment variables.</p>
+      <form id="loginForm" autocomplete="on">
+        <label>
+          <span>Username</span>
+          <input type="text" name="user" autocomplete="username" required />
+        </label>
+        <label>
+          <span>Password</span>
+          <input type="password" name="pass" autocomplete="current-password" required />
+        </label>
+        <button type="submit" class="admin-btn primary">Sign in</button>
+        <p class="admin-error" id="loginError" hidden></p>
+      </form>
+    </section>
+
+    <section id="editorPanel" class="admin-panel" hidden>
+      <div class="admin-editor-head">
+        <div>
+          <h1>War Teams</h1>
+          <p class="admin-hint">Edit team details and rosters. Members can be pulled by Discord user ID.</p>
+        </div>
+        <div class="admin-head-actions">
+          <button class="admin-btn ghost" id="addTeamBtn">+ Add Team</button>
+          <button class="admin-btn primary" id="saveBtn">Save Changes</button>
+        </div>
+      </div>
+
+      <p class="admin-status" id="saveStatus" hidden></p>
+
+      <div id="teamsEditor" class="admin-teams"></div>
+    </section>
+  </main>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>
