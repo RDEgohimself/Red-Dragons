@@ -1255,3 +1255,8 @@ img { max-width: 100%; display: block; }
   }
   html { scroll-behavior: auto; }
 }
+/* [hidden] must win over display rules on these containers */
+.member-modal[hidden],
+.team-detail[hidden] {
+  display: none;
+}
