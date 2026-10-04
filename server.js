@@ -7,6 +7,7 @@ const PORT = process.env.PORT || 3000;
 const INVITE_CODE = process.env.INVITE_CODE || 'reddragons';
 const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
+const YT_API_KEY = process.env.YOUTUBE_API_KEY;
 const WAR_CHANNEL_ID = '1504538662367662340';
 const YT_HANDLE = 'RedDragonsOfficial1';
 
@@ -104,6 +105,17 @@ async function fetchRoster() {
 /* ---------- YouTube ---------- */
 
 async function fetchChannelId() {
+  if (YT_API_KEY) {
+    const url = `https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=@${YT_HANDLE}&key=${YT_API_KEY}`;
+    const res = await fetch(url);
+    if (res.ok) {
+      const j = await res.json();
+      const id = j.items?.[0]?.id;
+      if (id) return id;
+    }
+  }
+
+  // Fallback: scrape the channel page
   const res = await fetch(`https://www.youtube.com/@${YT_HANDLE}`, {
     headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RedDragonsSite/1.0)' },
   });
@@ -124,8 +136,49 @@ function decodeXml(s) {
     .replace(/&apos;/g, "'");
 }
 
-async function fetchUploads() {
-  const channelId = await cached('channelId', fetchChannelId);
+async function fetchUploadsViaApi(channelId) {
+  // Uploads playlist ID = channel ID with leading "UC" swapped for "UU"
+  const uploadsPlaylistId = 'UU' + channelId.slice(2);
+  const all = [];
+  let pageToken = '';
+
+  do {
+    const params = new URLSearchParams({
+      part: 'snippet',
+      maxResults: '50',
+      playlistId: uploadsPlaylistId,
+      key: YT_API_KEY,
+    });
+    if (pageToken) params.set('pageToken', pageToken);
+
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?${params}`);
+    if (!res.ok) throw new Error(`YouTube API ${res.status}`);
+    const j = await res.json();
+
+    for (const item of j.items || []) {
+      const s = item.snippet;
+      const vid = s?.resourceId?.videoId;
+      if (!vid) continue;
+      if (s.title === 'Private video' || s.title === 'Deleted video') continue;
+      all.push({
+        id: vid,
+        title: s.title,
+        published: s.publishedAt,
+        url: `https://www.youtube.com/watch?v=${vid}`,
+        thumbnail:
+          s.thumbnails?.high?.url ||
+          s.thumbnails?.medium?.url ||
+          `https://i.ytimg.com/vi/${vid}/hqdefault.jpg`,
+      });
+    }
+
+    pageToken = j.nextPageToken || '';
+  } while (pageToken);
+
+  return all;
+}
+
+async function fetchUploadsViaRss(channelId) {
   const res = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`, {
     headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RedDragonsSite/1.0)' },
   });
@@ -133,18 +186,32 @@ async function fetchUploads() {
   const xml = await res.text();
 
   const entries = [...xml.matchAll(/<entry>([\s\S]*?)<\/entry>/g)].map((m) => m[1]);
-  return entries.map((e) => {
-    const id = e.match(/<yt:videoId>([^<]+)<\/yt:videoId>/)?.[1] ?? null;
-    const title = e.match(/<title>([^<]+)<\/title>/)?.[1] ?? 'Untitled';
-    const published = e.match(/<published>([^<]+)<\/published>/)?.[1] ?? null;
-    return {
-      id,
-      title: decodeXml(title),
-      published,
-      url: id ? `https://www.youtube.com/watch?v=${id}` : null,
-      thumbnail: id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : null,
-    };
-  });
+  return entries
+    .map((e) => {
+      const id = e.match(/<yt:videoId>([^<]+)<\/yt:videoId>/)?.[1] ?? null;
+      const title = e.match(/<title>([^<]+)<\/title>/)?.[1] ?? 'Untitled';
+      const published = e.match(/<published>([^<]+)<\/published>/)?.[1] ?? null;
+      return {
+        id,
+        title: decodeXml(title),
+        published,
+        url: id ? `https://www.youtube.com/watch?v=${id}` : null,
+        thumbnail: id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : null,
+      };
+    })
+    .filter((v) => v.id);
+}
+
+async function fetchUploads() {
+  const channelId = await cached('channelId', fetchChannelId);
+  if (YT_API_KEY) {
+    try {
+      return await fetchUploadsViaApi(channelId);
+    } catch (e) {
+      console.warn('YouTube API failed, falling back to RSS:', e.message);
+    }
+  }
+  return fetchUploadsViaRss(channelId);
 }
 
 /* ---------- Routes ---------- */
