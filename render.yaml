@@ -15,3 +15,5 @@ services:
         sync: false
       - key: GUILD_ID
         sync: false
+      - key: YOUTUBE_API_KEY
+        sync: false
