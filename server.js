@@ -58,11 +58,31 @@ async function discordBot(pathname) {
   return res.json();
 }
 
+// Paginate through every guild member (Discord caps each page at 1000)
+async function fetchAllMembers() {
+  if (!GUILD_ID) throw new Error('GUILD_ID not set');
+  const all = [];
+  let after = '0';
+
+  // Hard cap on pages in case Discord misbehaves — 50 pages * 1000 = 50k members.
+  for (let page = 0; page < 50; page++) {
+    const batch = await discordBot(
+      `/guilds/${GUILD_ID}/members?limit=1000&after=${after}`
+    );
+    if (!Array.isArray(batch) || batch.length === 0) break;
+    all.push(...batch);
+    if (batch.length < 1000) break;
+    after = batch[batch.length - 1].user.id;
+  }
+
+  return all;
+}
+
 async function fetchRoles() {
   if (!GUILD_ID) throw new Error('GUILD_ID not set');
   const [roles, members] = await Promise.all([
     discordBot(`/guilds/${GUILD_ID}/roles`),
-    discordBot(`/guilds/${GUILD_ID}/members?limit=1000`),
+    fetchAllMembers(),
   ]);
 
   const counts = {};
@@ -88,7 +108,7 @@ async function fetchRoles() {
 
 async function fetchRoster() {
   if (!GUILD_ID) throw new Error('GUILD_ID not set');
-  const members = await discordBot(`/guilds/${GUILD_ID}/members?limit=1000`);
+  const members = await fetchAllMembers();
   return members
     .filter((m) => !m.user?.bot)
     .map((m) => ({
