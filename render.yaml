@@ -9,3 +9,9 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 20.11.1
+      - key: INVITE_CODE
+        value: reddragons
+      - key: DISCORD_BOT_TOKEN
+        sync: false
+      - key: GUILD_ID
+        sync: false
