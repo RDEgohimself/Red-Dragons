@@ -1,8 +1,8 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const crypto = require('crypto');
-const fs = require('fs');
 const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,8 +17,13 @@ const SESSION_SECRET = process.env.SESSION_SECRET || 'dev-secret-change-me';
 const WAR_CHANNEL_ID = '1504538662367662340';
 const YT_HANDLE = 'RedDragonsOfficial1';
 
-const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
-const TEAMS_FILE = path.join(DATA_DIR, 'teams.json');
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabase = (SUPABASE_URL && SUPABASE_KEY)
+  ? createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    })
+  : null;
 
 const DEFAULT_TEAMS = [
   {
@@ -43,29 +48,45 @@ const DEFAULT_TEAMS = [
 app.use(express.json({ limit: '512kb' }));
 app.use(cookieParser(SESSION_SECRET));
 
-/* ---------- Teams storage ---------- */
-function loadTeamsFromDisk() {
+/* ---------- Supabase-backed teams storage ---------- */
+async function loadTeams() {
+  if (!supabase) {
+    console.warn('[teams] Supabase not configured — using in-memory defaults (edits will NOT persist).');
+    return DEFAULT_TEAMS;
+  }
   try {
-    const raw = fs.readFileSync(TEAMS_FILE, 'utf8');
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : DEFAULT_TEAMS;
-  } catch {
-    try {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-      fs.writeFileSync(TEAMS_FILE, JSON.stringify(DEFAULT_TEAMS, null, 2));
-    } catch (e) {
-      console.warn('Could not seed teams file:', e.message);
+    console.log('[teams] Reading from Supabase…');
+    const { data, error } = await supabase
+      .from('teams')
+      .select('data')
+      .eq('id', 'main')
+      .maybeSingle();
+    if (error) throw error;
+
+    if (data && Array.isArray(data.data)) {
+      console.log(`[teams] Loaded ${data.data.length} teams from Supabase.`);
+      return data.data;
     }
+
+    console.log('[teams] No teams row found, seeding defaults…');
+    await saveTeams(DEFAULT_TEAMS);
+    console.log('[teams] Seeded defaults to Supabase.');
+    return DEFAULT_TEAMS;
+  } catch (e) {
+    console.warn('[teams] Supabase load failed:', e.message);
     return DEFAULT_TEAMS;
   }
 }
 
-function saveTeamsToDisk(teams) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.writeFileSync(TEAMS_FILE, JSON.stringify(teams, null, 2));
+async function saveTeams(teams) {
+  if (!supabase) throw new Error('Supabase not configured');
+  const { error } = await supabase
+    .from('teams')
+    .upsert({ id: 'main', data: teams, updated_at: new Date().toISOString() });
+  if (error) throw error;
 }
 
-let teamsCache = loadTeamsFromDisk();
+let teamsCache = DEFAULT_TEAMS;
 
 /* ---------- Auth ---------- */
 function timingSafeEqual(a, b) {
@@ -183,7 +204,6 @@ async function fetchRoster() {
     }));
 }
 
-/* Look up a single guild member for the admin "add from Discord" flow */
 async function fetchDiscordUser(userId) {
   if (!GUILD_ID) throw new Error('GUILD_ID not set');
   const m = await discordBot(`/guilds/${GUILD_ID}/members/${userId}`);
@@ -368,11 +388,11 @@ app.get('/api/config', async (_req, res) => {
 app.get('/api/teams', (_req, res) => res.json(teamsCache));
 
 /* ---------- Admin routes ---------- */
-app.put('/api/teams', requireAdmin, (req, res) => {
+app.put('/api/teams', requireAdmin, async (req, res) => {
   if (!Array.isArray(req.body)) return res.status(400).json({ error: 'Expected an array of teams' });
   try {
     teamsCache = req.body;
-    saveTeamsToDisk(teamsCache);
+    await saveTeams(teamsCache);
     res.json({ ok: true, teams: teamsCache });
   } catch (e) {
     res.status(500).json({ error: 'Save failed', detail: e.message });
@@ -402,4 +422,11 @@ app.get('/admin', (_req, res) => {
 app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'], maxAge: '1h' }));
 app.get('*', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
-app.listen(PORT, () => console.log(`Red Dragons site up on :${PORT}`));
+/* ---------- Boot ---------- */
+(async () => {
+  console.log('[boot] Starting server…');
+  console.log('[boot] Supabase URL:', SUPABASE_URL || '(not set)');
+  console.log('[boot] Supabase key present:', !!SUPABASE_KEY);
+  teamsCache = await loadTeams();
+  app.listen(PORT, () => console.log(`[boot] Red Dragons site up on :${PORT}`));
+})();
