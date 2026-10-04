@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Red Dragons — #1 Asia Crew</title>
-  <meta name="description" content="Red Dragons. The strongest crew in Asia. War teams Z, Y, X, A. Live roster. Clips, events, giveaways. Join the Discord." />
+  <meta name="description" content="Red Dragons. The strongest crew in Asia. War teams Z, Y, X, A. Live roster. Uploads, events, giveaways. Join the Discord." />
   <meta property="og:title" content="Red Dragons — #1 Asia Crew" />
   <meta property="og:description" content="Strongest crew in Asia. Wars accepted. Clips rewarded. Join the Discord." />
   <meta property="og:type" content="website" />
@@ -27,7 +27,7 @@
       <a href="#teams">War Teams</a>
       <a href="#roles">Roles</a>
       <a href="#wars">Wars</a>
-      <a href="#clips">Clips</a>
+      <a href="#uploads">Uploads</a>
       <a href="#events">Events</a>
     </nav>
     <a class="btn btn-discord nav-cta" href="https://discord.gg/reddragons" target="_blank" rel="noopener">
@@ -58,7 +58,7 @@
         <a class="btn btn-discord lg" href="https://discord.gg/reddragons" target="_blank" rel="noopener">
           <span class="dot"></span> Join the Discord
         </a>
-        <a class="btn btn-ghost lg" href="#wars">Request a War</a>
+        <a class="btn btn-ghost lg js-request-war" href="#wars">Request a War</a>
       </div>
 
       <div class="hero-stats">
@@ -215,143 +215,27 @@
     </div>
   </section>
 
-  <!-- ROLES (Discord) -->
+  <!-- ROLES (live from Discord) -->
   <section id="roles" class="section roles">
     <div class="section-head">
       <span class="section-num">03</span>
       <h2>Roles</h2>
-      <span class="section-tag">discord hierarchy</span>
+      <span class="section-tag">live from discord</span>
     </div>
     <p class="section-sub">
-      Every dragon wears a Discord role. Rank determines access, authority, and
-      how loud your ping is when you call for backup.
+      Every dragon wears a Discord role. This hierarchy updates live from the server.
     </p>
 
-    <!-- Role hierarchy -->
-    <div class="role-hierarchy">
-      <article class="role-row role-founder">
-        <span class="role-swatch"></span>
-        <div class="role-info">
-          <h3>Founder</h3>
-          <p>Holds the banner. Final say on wars, roster, and treasury.</p>
-        </div>
-        <div class="role-members">
-          <span class="rm-label">Held by</span>
-          <div class="rm-chips">
-            <span class="chip">Vex</span>
-          </div>
-        </div>
-        <span class="role-count">1</span>
-      </article>
-
-      <article class="role-row role-council">
-        <span class="role-swatch"></span>
-        <div class="role-info">
-          <h3>Council</h3>
-          <p>Team captains and senior leadership. Vote on big calls.</p>
-        </div>
-        <div class="role-members">
-          <span class="rm-label">Held by</span>
-          <div class="rm-chips">
-            <span class="chip">Kael</span>
-            <span class="chip">Sable</span>
-            <span class="chip">Rook</span>
-          </div>
-        </div>
-        <span class="role-count">3</span>
-      </article>
-
-      <article class="role-row role-officer">
-        <span class="role-swatch"></span>
-        <div class="role-info">
-          <h3>Officer</h3>
-          <p>Runs events, vets recruits, enforces war rules.</p>
-        </div>
-        <div class="role-members">
-          <span class="rm-label">Held by</span>
-          <div class="rm-chips">
-            <span class="chip">Ash</span>
-            <span class="chip">Nyx</span>
-            <span class="chip">Dray</span>
-          </div>
-        </div>
-        <span class="role-count">3</span>
-      </article>
-
-      <article class="role-row role-veteran">
-        <span class="role-swatch"></span>
-        <div class="role-info">
-          <h3>Veteran</h3>
-          <p>Trusted members. Priority queue for war slots and giveaways.</p>
-        </div>
-        <div class="role-members">
-          <span class="rm-label">Held by</span>
-          <div class="rm-chips">
-            <span class="chip">Pyre</span>
-            <span class="chip">Zeph</span>
-            <span class="chip">+4</span>
-          </div>
-        </div>
-        <span class="role-count">6</span>
-      </article>
-
-      <article class="role-row role-member">
-        <span class="role-swatch"></span>
-        <div class="role-info">
-          <h3>Member</h3>
-          <p>Full access. Voice channels, war eligibility, clip submissions.</p>
-        </div>
-        <div class="role-members">
-          <span class="rm-label">Held by</span>
-          <div class="rm-chips">
-            <span class="chip">everyone active</span>
-          </div>
-        </div>
-        <span class="role-count">large</span>
-      </article>
-
-      <article class="role-row role-recruit">
-        <span class="role-swatch"></span>
-        <div class="role-info">
-          <h3>Recruit</h3>
-          <p>On trial. 14 days to prove you belong. No war slots yet.</p>
-        </div>
-        <div class="role-members">
-          <span class="rm-label">Held by</span>
-          <div class="rm-chips">
-            <span class="chip">new joins</span>
-          </div>
-        </div>
-        <span class="role-count">rolling</span>
-      </article>
-
-      <article class="role-row role-guest">
-        <span class="role-swatch"></span>
-        <div class="role-info">
-          <h3>Guest</h3>
-          <p>Visiting crews, allies, war challengers. Read-only outside #general.</p>
-        </div>
-        <div class="role-members">
-          <span class="rm-label">Held by</span>
-          <div class="rm-chips">
-            <span class="chip">allies</span>
-          </div>
-        </div>
-        <span class="role-count">—</span>
-      </article>
+    <div class="role-hierarchy" id="roleHierarchy">
+      <p class="loading-note">Loading roles…</p>
     </div>
 
-    <!-- Member roster -->
     <div class="roster-block">
       <div class="roster-head">
         <h3>Who Has What</h3>
         <div class="roster-filters" id="rosterFilters">
-          <button class="filter-chip active" data-filter="all">All</button>
-          <button class="filter-chip" data-filter="Z">Team Z</button>
-          <button class="filter-chip" data-filter="Y">Team Y</button>
-          <button class="filter-chip" data-filter="X">Team X</button>
-          <button class="filter-chip" data-filter="A">Team A</button>
-          <button class="filter-chip" data-filter="none">No Team</button>
+          <button class="filter-chip active" data-role="all">All</button>
+          <!-- role filter chips injected by main.js -->
         </div>
       </div>
 
@@ -359,14 +243,13 @@
         <table class="roster-table">
           <thead>
             <tr>
-              <th>Handle</th>
-              <th>Team</th>
-              <th>Discord Role</th>
-              <th>In-Game Role</th>
+              <th>Member</th>
+              <th>Top Role</th>
+              <th>All Roles</th>
             </tr>
           </thead>
           <tbody id="rosterBody">
-            <!-- populated by main.js -->
+            <tr><td colspan="3" class="loading-note">Loading roster…</td></tr>
           </tbody>
         </table>
         <p class="roster-empty" id="rosterEmpty" hidden>No members match that filter.</p>
@@ -387,11 +270,10 @@
           You want a war? We accept. Bring your crew, bring your best, bring everything you've got.
         </p>
         <p>
-          Open a ticket in <code>#war-requests</code> with your crew name, roster
-          size, and preferred time. We'll match it — or raise it. Team Z, Y, X, or A
-          will answer.
+          Hit the button and it drops you straight into the war-requests channel.
+          Post your crew name, roster size, and preferred time. We'll match it — or raise it.
         </p>
-        <a class="btn btn-discord" href="https://discord.gg/reddragons" target="_blank" rel="noopener">
+        <a class="btn btn-discord js-request-war" href="#wars">
           <span class="dot"></span> Request in Discord
         </a>
       </div>
@@ -400,10 +282,8 @@
           <h3>Match Rules</h3>
           <ul>
             <li>No third-party scripts. Clean fights only.</li>
-            <li>Roster locked 30 minutes before start.</li>
-            <li>Best of 3, or agreed-upon format.</li>
-            <li>Team captains confirm the lineup in voice.</li>
-            <li>Winner takes bragging rights. Loser takes notes.</li>
+            <li>First to 5, unless changed by war fighters.</li>
+            <li>Region may change, or cross-region may be agreed.</li>
           </ul>
         </div>
 
@@ -432,49 +312,23 @@
     </div>
   </section>
 
-  <!-- CLIPS -->
-  <section id="clips" class="section clips">
+  <!-- UPLOADS -->
+  <section id="uploads" class="section uploads">
     <div class="section-head">
       <span class="section-num">05</span>
-      <h2>Clips</h2>
-      <span class="section-tag">featured</span>
+      <h2>Uploads</h2>
+      <span class="section-tag">from youtube</span>
     </div>
     <p class="section-sub">
-      Share your best moments — gameplay, combos, clutches, screenshots.
-      Featured uploads get rewarded.
+      Every video from the crew channel — new ones show up here automatically.
     </p>
-    <div class="clips-grid">
-      <article class="clip">
-        <div class="clip-thumb" style="--h: 12deg;"></div>
-        <div class="clip-body">
-          <h3>1v4 clutch on Marineford</h3>
-          <p>by <strong>@vex</strong> · 2 days ago</p>
-        </div>
-      </article>
-      <article class="clip">
-        <div class="clip-thumb" style="--h: 200deg;"></div>
-        <div class="clip-body">
-          <h3>Team Y 3-man rotation</h3>
-          <p>by <strong>@kael</strong> · 5 days ago</p>
-        </div>
-      </article>
-      <article class="clip">
-        <div class="clip-thumb" style="--h: 340deg;"></div>
-        <div class="clip-body">
-          <h3>Dragon combo infinite</h3>
-          <p>by <strong>@sable</strong> · 1 week ago</p>
-        </div>
-      </article>
-      <article class="clip">
-        <div class="clip-thumb" style="--h: 60deg;"></div>
-        <div class="clip-body">
-          <h3>Team A comeback — 0-2 to 3-2</h3>
-          <p>by <strong>@rook</strong> · 2 weeks ago</p>
-        </div>
-      </article>
+
+    <div class="uploads-grid" id="uploadsGrid">
+      <p class="loading-note">Loading uploads…</p>
     </div>
-    <a class="btn btn-ghost" href="https://discord.gg/reddragons" target="_blank" rel="noopener">
-      Post yours in Discord
+
+    <a class="btn btn-ghost" href="https://www.youtube.com/@RedDragonsOfficial1" target="_blank" rel="noopener">
+      Open channel →
     </a>
   </section>
 
