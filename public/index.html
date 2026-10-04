@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Red Dragons — #1 Asia Crew</title>
-  <meta name="description" content="Red Dragons. The strongest crew in Asia. War teams Z, Y, X, A. Live roster. Uploads, events, giveaways. Join the Discord." />
+  <meta name="description" content="Red Dragons. The strongest crew in Asia. War teams. Live roster. Uploads, events, giveaways. Join the Discord." />
   <meta property="og:title" content="Red Dragons — #1 Asia Crew" />
   <meta property="og:description" content="Strongest crew in Asia. Wars accepted. Clips rewarded. Join the Discord." />
   <meta property="og:type" content="website" />
@@ -73,7 +73,7 @@
         </div>
         <div class="hs-divider"></div>
         <div class="hs">
-          <strong>800+</strong>
+          <strong>750+</strong>
           <span>Wars Won</span>
         </div>
         <div class="hs-divider"></div>
@@ -144,78 +144,15 @@
       <span class="section-tag">four banners</span>
     </div>
     <p class="section-sub">
-      Every war runs through a team. Each has its own captain, its own style,
-      its own record. Pick your banner — or get assigned by the council.
+      Every war runs through a team. Click a banner to see its roster.
     </p>
-
-    <div class="teams-grid">
-      <article class="team team-z">
-        <div class="team-banner">
-          <span class="team-letter">Z</span>
-          <span class="team-tag">vanguard</span>
-        </div>
-        <div class="team-body">
-          <h3>Team Z</h3>
-          <p class="team-desc">The vanguard. First in, last out. Z opens every war and sets the tempo.</p>
-          <dl class="team-meta">
-            <div><dt>Captain</dt><dd>Vex</dd></div>
-            <div><dt>Style</dt><dd>Aggro</dd></div>
-            <div><dt>Record</dt><dd>47–4</dd></div>
-          </dl>
-        </div>
-      </article>
-
-      <article class="team team-y">
-        <div class="team-banner">
-          <span class="team-letter">Y</span>
-          <span class="team-tag">strikers</span>
-        </div>
-        <div class="team-body">
-          <h3>Team Y</h3>
-          <p class="team-desc">The strikers. Fast rotations, surgical picks. Y ends fights before they start.</p>
-          <dl class="team-meta">
-            <div><dt>Captain</dt><dd>Kael</dd></div>
-            <div><dt>Style</dt><dd>Burst</dd></div>
-            <div><dt>Record</dt><dd>41–7</dd></div>
-          </dl>
-        </div>
-      </article>
-
-      <article class="team team-x">
-        <div class="team-banner">
-          <span class="team-letter">X</span>
-          <span class="team-tag">reapers</span>
-        </div>
-        <div class="team-body">
-          <h3>Team X</h3>
-          <p class="team-desc">The reapers. Endgame specialists. X cleans up what the others leave behind.</p>
-          <dl class="team-meta">
-            <div><dt>Captain</dt><dd>Sable</dd></div>
-            <div><dt>Style</dt><dd>Control</dd></div>
-            <div><dt>Record</dt><dd>38–9</dd></div>
-          </dl>
-        </div>
-      </article>
-
-      <article class="team team-a">
-        <div class="team-banner">
-          <span class="team-letter">A</span>
-          <span class="team-tag">ancients</span>
-        </div>
-        <div class="team-body">
-          <h3>Team A</h3>
-          <p class="team-desc">The ancients. Founders and veterans. Called in when the fight actually matters.</p>
-          <dl class="team-meta">
-            <div><dt>Captain</dt><dd>Rook</dd></div>
-            <div><dt>Style</dt><dd>Adaptive</dd></div>
-            <div><dt>Record</dt><dd>52–2</dd></div>
-          </dl>
-        </div>
-      </article>
+    <div class="teams-grid" id="teamsGrid">
+      <p class="loading-note">Loading war teams…</p>
     </div>
+    <div class="team-detail" id="teamDetail" hidden></div>
   </section>
 
-  <!-- ROLES (live from Discord) -->
+  <!-- ROLES -->
   <section id="roles" class="section roles">
     <div class="section-head">
       <span class="section-num">03</span>
@@ -225,20 +162,16 @@
     <p class="section-sub">
       Every dragon wears a Discord role. This hierarchy updates live from the server.
     </p>
-
     <div class="role-hierarchy" id="roleHierarchy">
       <p class="loading-note">Loading roles…</p>
     </div>
-
     <div class="roster-block">
       <div class="roster-head">
         <h3>Who Has What</h3>
         <div class="roster-filters" id="rosterFilters">
           <button class="filter-chip active" data-role="all">All</button>
-          <!-- role filter chips injected by main.js -->
         </div>
       </div>
-
       <div class="roster-table-wrap">
         <table class="roster-table">
           <thead>
@@ -286,7 +219,6 @@
             <li>Region may change, or cross-region may be agreed.</li>
           </ul>
         </div>
-
         <div class="wc-section">
           <h3>Banned</h3>
           <ul class="wc-banned">
@@ -303,7 +235,6 @@
             <li>No heal on NPC</li>
           </ul>
         </div>
-
         <p class="wc-note">
           These are not the final war rules. War fighters may update or add
           rules live in the war GC before a match.
@@ -322,11 +253,9 @@
     <p class="section-sub">
       Every video from the crew channel — new ones show up here automatically.
     </p>
-
     <div class="uploads-grid" id="uploadsGrid">
       <p class="loading-note">Loading uploads…</p>
     </div>
-
     <a class="btn btn-ghost" href="https://www.youtube.com/@RedDragonsOfficial1" target="_blank" rel="noopener">
       Open channel →
     </a>
@@ -345,34 +274,22 @@
     <ul class="events-list">
       <li>
         <span class="ev-day">MON</span>
-        <div class="ev-body">
-          <h3>Crew Grind Night</h3>
-          <p>Group up, farm together. All levels welcome.</p>
-        </div>
+        <div class="ev-body"><h3>Crew Grind Night</h3><p>Group up, farm together. All levels welcome.</p></div>
         <span class="ev-time">20:00 SGT</span>
       </li>
       <li>
         <span class="ev-day">WED</span>
-        <div class="ev-body">
-          <h3>Tournament</h3>
-          <p>1v1 and 2v2 brackets. Prize pool from crew treasury.</p>
-        </div>
+        <div class="ev-body"><h3>Tournament</h3><p>1v1 and 2v2 brackets. Prize pool from crew treasury.</p></div>
         <span class="ev-time">21:00 SGT</span>
       </li>
       <li>
         <span class="ev-day">FRI</span>
-        <div class="ev-body">
-          <h3>War Night</h3>
-          <p>Open wars against visiting crews. Team Z leads, others rotate in.</p>
-        </div>
+        <div class="ev-body"><h3>War Night</h3><p>Open wars against visiting crews. Team Z leads, others rotate in.</p></div>
         <span class="ev-time">22:00 SGT</span>
       </li>
       <li>
         <span class="ev-day">SUN</span>
-        <div class="ev-body">
-          <h3>Giveaways</h3>
-          <p>Fruits, items, rare drops. Active members only.</p>
-        </div>
+        <div class="ev-body"><h3>Giveaways</h3><p>Fruits, items, rare drops. Active members only.</p></div>
         <span class="ev-time">19:00 SGT</span>
       </li>
     </ul>
@@ -405,10 +322,20 @@
         <a href="https://discord.gg/reddragons" target="_blank" rel="noopener">Discord</a> ·
         <a href="#teams">Teams</a> ·
         <a href="#roles">Roles</a> ·
+        <a href="/admin">Admin</a> ·
         <a href="#top">Top</a>
       </p>
     </div>
   </footer>
+
+  <!-- Member profile modal -->
+  <div class="member-modal" id="memberModal" hidden>
+    <div class="member-modal-backdrop" data-modal-close></div>
+    <div class="member-modal-card" role="dialog" aria-modal="true">
+      <button class="member-modal-close" data-modal-close aria-label="Close">✕</button>
+      <div class="member-modal-body" id="memberModalBody"></div>
+    </div>
+  </div>
 
   <script src="js/main.js"></script>
 </body>
